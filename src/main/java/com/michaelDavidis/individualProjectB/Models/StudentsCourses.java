@@ -18,7 +18,12 @@ public class StudentsCourses {
     private String courseId;
 
     Menu menu = new Menu();
-
+    
+    /**
+     * Inserts values into the junction table student_courses
+     * @param studentId Student's ID.
+     * @param courseId Course's ID.
+     */
     public void insertIntoStudentsCourses(String studentId, String courseId) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -60,7 +65,9 @@ public class StudentsCourses {
             }
         }
     }
-
+    /**
+     * Select students per course.
+     */
     public static void selectStudentsPerCourse() {
         Connection connection = null;
         Statement statement = null;
@@ -109,6 +116,119 @@ public class StudentsCourses {
                 }
             }
         }
+    }
+    
+    /**
+     * Gets students from the course ID.
+     * @param courseId Given course ID.
+     */
+    public static void selectStudentsFromCourseId(String courseId) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            Class.forName(Tools.MYSQL_JDBC_DRIVER);
+
+            connection = DriverManager.getConnection(Tools.DB_URL, Tools.USERNAME, Tools.PASSWORD);
+
+            String query = "SELECT S.STUDENT_ID, S.LAST_NAME, S.FIRST_NAME FROM STUDENTS S, COURSES C, STUDENTS_COURSES SC WHERE S.STUDENT_ID = SC.STUDENT_ID AND C.COURSE_ID = SC.COURSE_ID AND C.COURSE_ID = ?;";
+
+            preparedStatement = connection.prepareStatement(query);
+
+            preparedStatement.setString(1, courseId);
+
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                String studentId = resultSet.getString("STUDENT_ID");
+                String lastName = resultSet.getString("LAST_NAME");
+                String firstName = resultSet.getString("FIRST_NAME");
+                System.out.println(studentId + ". " + lastName + " " + firstName);
+            }
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Creates an ArrayList of students per course ID.
+     * @param courseId Given course ID.
+     * @return Returns ArrayList of student IDs.
+     */
+    public static ArrayList<String> createArrayStudentsFromCourseId(String courseId) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<String> studentIDs = new ArrayList<>();
+
+        try {
+            Class.forName(Tools.MYSQL_JDBC_DRIVER);
+
+            connection = DriverManager.getConnection(Tools.DB_URL, Tools.USERNAME, Tools.PASSWORD);
+
+            String query = "SELECT S.STUDENT_ID FROM STUDENTS S, COURSES C, STUDENTS_COURSES SC WHERE S.STUDENT_ID = SC.STUDENT_ID AND C.COURSE_ID = SC.COURSE_ID AND C.COURSE_ID = ?;";
+
+            preparedStatement = connection.prepareStatement(query);
+
+            preparedStatement.setString(1, courseId);
+
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                String studentId = resultSet.getString("STUDENT_ID");
+                studentIDs.add(studentId);
+            }
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return studentIDs;
     }
 
 }

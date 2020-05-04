@@ -18,7 +18,11 @@ public class TrainersCourses {
     private String courseId;
     
     Menu menu = new Menu();
-
+    /**
+     * Inserts values into the junction table trainers_courses
+     * @param trainerId Trainer's ID.
+     * @param courseId Course's ID.
+     */
     public void insertIntoTrainersCourses(String trainerId, String courseId) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -60,7 +64,12 @@ public class TrainersCourses {
             }
         }
     }
-
+    
+    /**
+     * Assigns a trainer to a course.
+     * @param pkList ArrayList of primary keys.
+     * @param trainer Trainer object.
+     */
     public void assignTrainersToCourse(ArrayList<String> pkList, Trainer trainer) {
         System.out.println("Which course is the trainer teaching?");
         menu.showAllCourses();

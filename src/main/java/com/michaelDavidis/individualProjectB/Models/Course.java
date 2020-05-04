@@ -5,13 +5,8 @@
  */
 package com.michaelDavidis.individualProjectB.Models;
 
-
 import java.sql.*;
 import java.util.ArrayList;
-
-
-
-
 
 /**
  *
@@ -25,8 +20,6 @@ public class Course {
     private String type;
     private String startDate;
     private String endDate;
-   
-    
 
     public Course(int id, String title, String stream, String type, String startDate, String endDate) {
         this.id = id;
@@ -39,9 +32,12 @@ public class Course {
 
     public Course() {
     }
-    
-    
-    
+
+    /**
+     * Selects all courses.
+     *
+     * @return Returns an ArrayList of courses.
+     */
     public ArrayList<Course> selectAllCourses() {
         Connection connection = null;
         Statement statement = null;
@@ -68,7 +64,7 @@ public class Course {
                 String eDate = resultSet.getString("END_DATE");
                 Course course = new Course(id, title, stream, type, sDate, eDate);
                 courseList.add(course);
-                
+
             }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
@@ -98,7 +94,11 @@ public class Course {
         }
         return courseList;
     }
-    
+
+    /**
+     *Creates a list of all the ID in courses_assignments
+     * @return The ArrayList of all the IDs
+     */
     public ArrayList<String> selectAllIdsCourseAssignment() {
         Connection connection = null;
         Statement statement = null;
@@ -149,7 +149,8 @@ public class Course {
         return pkList;
     }
     
-    public static int getMaxNumOfCourses(){Connection connection = null;
+    public static int getMaxNumOfCourses() {
+        Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
         int pk = 0;
@@ -196,8 +197,7 @@ public class Course {
         }
         return pk;
     }
-    
-    
+
     public int getId() {
         return id;
     }
@@ -205,8 +205,6 @@ public class Course {
     public void setId(int id) {
         this.id = id;
     }
-
-
 
     public String getTitle() {
         return title;

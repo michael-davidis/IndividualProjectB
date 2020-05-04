@@ -21,18 +21,21 @@ public class Assignment {
     private int oMark;
     private int tMark;
 
-    public Assignment(String id, String title, String description, String subDateTime, int oralMark, int totalMark) {
+    public Assignment(String id, String title, String description, String subDateTime) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.subDateTime = subDateTime;
-        this.oMark = oralMark;
-        this.tMark = totalMark;
     }
 
     public Assignment() {
     }
 
+    /**
+     * Select all assignments in the database
+     *
+     * @return Returns an ArrayList of assignments.
+     */
     public ArrayList<Assignment> selectAllAssignments() {
         Connection connection = null;
         Statement statement = null;
@@ -54,9 +57,7 @@ public class Assignment {
                 String title = resultSet.getString("TITLE");
                 String description = resultSet.getString("DESCRIPTION");
                 String subDate = resultSet.getString("SUB_DATE");
-                int oMark = resultSet.getInt("ORAL_MARK");
-                int tMark = resultSet.getInt("TOTAL_MARK");
-                Assignment assignment = new Assignment(id, title, description, subDate, oMark, tMark);
+                Assignment assignment = new Assignment(id, title, description, subDate);
                 assignmentList.add(assignment);
             }
         } catch (ClassNotFoundException | SQLException e) {
@@ -87,8 +88,16 @@ public class Assignment {
         }
         return assignmentList;
     }
-    
 
+    /**
+     * Gets the assignment's ID based on the title, description and submission
+     * date
+     *
+     * @param title Assignment's title.
+     * @param desc Assignment's description.
+     * @param subDate Assignment's submission date.
+     * @return
+     */
     public String getAssignmentId(String title, String desc, String subDate) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -138,6 +147,59 @@ public class Assignment {
             }
         }
         return assignmentId;
+    }
+    
+    /**
+     * Finds the maximum number of assignments in the database.
+     * @return The ID of the last assignment which is also the number of assignments.
+     */
+    public static int getMaxNumOfAssignments() {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        int pk = 0;
+
+        try {
+            Class.forName(Tools.MYSQL_JDBC_DRIVER);
+
+            connection = DriverManager.getConnection(Tools.DB_URL, Tools.USERNAME, Tools.PASSWORD);
+
+            statement = connection.createStatement();
+
+            String query = "SELECT ASSIGNMENT_ID AS MAX_NUM FROM ASSIGNMENTS ORDER BY ASSIGNMENT_ID DESC LIMIT 1;";
+
+            resultSet = statement.executeQuery(query);
+
+            while (resultSet.next()) {
+                pk = resultSet.getInt("MAX_NUM");
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return pk;
     }
 
     public String getId() {

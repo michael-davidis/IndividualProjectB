@@ -17,7 +17,13 @@ public class Main {
     static Trainer trainer = new Trainer();
     static Assignment assignment = new Assignment();
     static CoursesAssignments ca = new CoursesAssignments();
-
+    static StudentsAssignments sa = new StudentsAssignments();
+    static TrainersCourses tc = new TrainersCourses();
+    
+    /**
+     * Creates a student.
+     * @param studentPkList ArrayList of all primary keys for duplicate checking.
+     */
     public static void createStudent(ArrayList<String> studentPkList) {
         Connection connection = null;
         Student student = new Student();
@@ -111,7 +117,10 @@ public class Main {
             }
         }
     }
-
+    /**
+     * Creates a trainer
+     *  @param trainerPkList ArrayList of all primary keys for duplicate checking.
+     */
     public static void createTrainer(ArrayList<String> trainerPkList) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -204,7 +213,10 @@ public class Main {
             }
         }
     }
-
+    /**
+     * Creates an assignment.
+     * @param assignmentPkList ArrayList of all primary keys for duplicate checking.
+     */
     public static void createAssignment(ArrayList<String> assignmentPkList) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -217,7 +229,7 @@ public class Main {
 
             connection = DriverManager.getConnection(Tools.DB_URL, Tools.USERNAME, Tools.PASSWORD);
 
-            String query = "INSERT INTO ASSIGNMENTS VALUES (NULL, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO ASSIGNMENTS VALUES (NULL, ?, ?, ?)";
 
             preparedStatement = connection.prepareStatement(query);
 
@@ -228,22 +240,16 @@ public class Main {
             String desc = Tools.scan.nextLine();
             System.out.println("Enter the assignment's submission date in the following format (YYYY-MM-DD): ");
             String subDate = Tools.scan.next();
-            System.out.println("Enter the assignment's oral mark: ");
-            int oMark = Tools.scan.nextInt();
-            System.out.println("Enter the assignment's total mark: ");
-            int tMark = Tools.scan.nextInt();
 
             preparedStatement.setString(1, title);
             preparedStatement.setString(2, desc);
             preparedStatement.setString(3, subDate);
-            preparedStatement.setInt(4, oMark);
-            preparedStatement.setInt(5, tMark);
 
             int result = preparedStatement.executeUpdate();
 
             if (result > 0) {
                 System.out.println("Update successful!");
-                assignment = new Assignment(assignment.getAssignmentId(title, desc, subDate), title, desc, subDate, oMark, tMark);
+                assignment = new Assignment(assignment.getAssignmentId(title, desc, subDate), title, desc, subDate);
                 System.out.println("Would you  like to assign the asssignment to a course? (Y/N)");
                 String addAnother = Tools.scan.next();
                 while (addAnother.equalsIgnoreCase("y")) {
@@ -304,7 +310,9 @@ public class Main {
         }
 
     }
-
+    /**
+     * Creates a course.
+     */
     public static void createCourse() {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -324,6 +332,7 @@ public class Main {
             String deathOfAScanner = Tools.scan.nextLine();
             String stream = Tools.scan.nextLine();
             System.out.println("Enter the course's type: ");
+            deathOfAScanner = Tools.scan.next();
             String type = Tools.scan.next();
             System.out.println("Enter the course's start date in the following format (YYYY-MM-DD): ");
             String sDate = Tools.scan.next();
@@ -364,7 +373,10 @@ public class Main {
         }
 
     }
-
+    
+    /**
+     * Creates an entry in the junction table students_courses.
+     */
     public static void createConnectionStudentCourse() {
         ArrayList<String> pkList = student.selectAllIdsStudentCourse();
         String addAnotherStudent = "y";
@@ -426,7 +438,9 @@ public class Main {
             addAnotherStudent = Tools.scan.next();
         }
     }
-
+    /**
+     * Creates an entry in the junction table trainers_courses.
+     */
     public static void createConnectionTrainersCourses() {
         ArrayList<String> pkList = trainer.selectAllIdsTrainerCourse();
         String addAnotherStudent = "y";
@@ -441,9 +455,9 @@ public class Main {
                 trainerChoice = Tools.scan.next();
             }
             int trainerChoiceV = Integer.valueOf(trainerChoice);
-            while (Student.getMaxNumOfStudents() < trainerChoiceV) {
+            while (Trainer.getMaxNumOfTrainers() < trainerChoiceV) {
                 System.out.println("Incorrect number.");
-                Menu.showAllStudents();
+                Menu.showAllTrainers();
                 System.out.print("Please enter an option from one of the above: ");
                 trainerChoice = Tools.scan.next();
                 while (!Tools.intValidation(trainerChoice)) {
@@ -478,7 +492,7 @@ public class Main {
                 if (pkList.contains(pk)) {
                     System.out.println("This trainer is already teaching in this class.");
                 } else {
-                    sc.insertIntoStudentsCourses(trainerChoice, courseChoice);
+                    tc.insertIntoTrainersCourses(trainerChoice, courseChoice);
                     pkList.add(pk);
                 }
                 System.out.print("Do you want to add this trainer to another course? (Y/N)");
@@ -488,67 +502,111 @@ public class Main {
             addAnotherStudent = Tools.scan.next();
         }
     }
-
-    public static void createConnectionAssignmentCourse() {
-        ArrayList<String> pkList = CoursesAssignments.selectAllIdsCourseAssignment();
-        String addAnotherStudent = "y";
-
-        while (addAnotherStudent.equalsIgnoreCase("y")) {
-            System.out.println("Which assignment would you like to assign to a course?");
+    /**
+     * Creates an entry in the junction table students_assignments by referring to student_courses and courses_assignments.
+     */
+    public static void createConnectionCourseStudentAssignment() {
+        ArrayList<String> pkList = StudentsAssignments.selectAllIdsStudentsAssignment();
+        System.out.println("Which course do you want to access?");
+        Menu.showAllCourses();
+        System.out.println("Type the desired number:");
+        String courseChoice = Tools.scan.next();
+        while (!Tools.intValidation(courseChoice)) {
+            System.out.println("Please enter a valid option: ");
+            courseChoice = Tools.scan.next();
+        }
+        int courseChoiceV = Integer.valueOf(courseChoice);
+        while (Course.getMaxNumOfCourses() < courseChoiceV) {
+            System.out.println("Incorrect number.");
+            Menu.showAllCourses();
+            System.out.print("Please enter an option from one of the above: ");
+            courseChoice = Tools.scan.next();
+            while (!Tools.intValidation(courseChoice)) {
+                System.out.println("Please enter a valid option: ");
+                courseChoice = Tools.scan.next();
+            }
+            courseChoiceV = Integer.valueOf(courseChoice);
+        }
+        System.out.println("Which student do you want to choose?");
+        StudentsCourses.selectStudentsFromCourseId(courseChoice);
+        System.out.print("Type the desired number: ");
+        String studentChoice = Tools.scan.next();
+        while (!Tools.intValidation(studentChoice)) {
+            System.out.println("Please enter a valid option: ");
+            courseChoice = Tools.scan.next();
+        }
+        while (!StudentsCourses.createArrayStudentsFromCourseId(courseChoice).contains(studentChoice)) {
+            StudentsCourses.selectStudentsFromCourseId(courseChoice);
+            System.out.println("Please choose a student that attends this class from the above:");
+            studentChoice = Tools.scan.next();
+        }
+        System.out.println("Choose the assignment you want the student to have");
+        ca.getAssignmentsPerCourse(courseChoice);
+        System.out.print("Type the desired number: ");
+        String assignmentChoice = Tools.scan.next();
+        while (!Tools.intValidation(assignmentChoice)) {
+            System.out.println("Please enter a valid option: ");
+            assignmentChoice = Tools.scan.next();
+        }
+        int assignmentChoiceV = Integer.valueOf(assignmentChoice);
+        while (Assignment.getMaxNumOfAssignments() < assignmentChoiceV) {
+            System.out.println("Incorrect number.");
             Menu.showAllAssignments();
-            System.out.print("Choose the appropriate number: ");
-            String assignmentChoice = Tools.scan.next();
+            System.out.print("Please enter an option from one of the above: ");
+            assignmentChoice = Tools.scan.next();
             while (!Tools.intValidation(assignmentChoice)) {
                 System.out.println("Please enter a valid option: ");
                 assignmentChoice = Tools.scan.next();
             }
-            int trainerChoiceV = Integer.valueOf(assignmentChoice);
-            while (Student.getMaxNumOfStudents() < trainerChoiceV) {
+            assignmentChoiceV = Integer.valueOf(assignmentChoice);
+        }
+        while (!CoursesAssignments.createArrayAssignmentFromCourseId(courseChoice).contains(assignmentChoice)) {
+            ca.getAssignmentsPerCourse(courseChoice);
+            System.out.println("Please choose an assignment that is in this class from the above:");
+            assignmentChoice = Tools.scan.next();
+            while (!Tools.intValidation(assignmentChoice)) {
+                System.out.println("Please enter a valid option: ");
+                assignmentChoice = Tools.scan.next();
+            }
+            assignmentChoiceV = Integer.valueOf(assignmentChoice);
+            while (Assignment.getMaxNumOfAssignments() < assignmentChoiceV) {
                 System.out.println("Incorrect number.");
-                Menu.showAllStudents();
+                ca.getAssignmentsPerCourse(courseChoice);
                 System.out.print("Please enter an option from one of the above: ");
                 assignmentChoice = Tools.scan.next();
                 while (!Tools.intValidation(assignmentChoice)) {
                     System.out.println("Please enter a valid option: ");
                     assignmentChoice = Tools.scan.next();
                 }
-                trainerChoiceV = Integer.valueOf(assignmentChoice);
+                assignmentChoiceV = Integer.valueOf(assignmentChoice);
             }
-            String addAnotherCourse = "y";
-            while (addAnotherCourse.equalsIgnoreCase("y")) {
-                System.out.println("Which course do you want to assign it to?");
-                Menu.showAllCourses();
-                System.out.print("Choose the appropriate number: ");
-                String courseChoice = Tools.scan.next();
-                while (!Tools.intValidation(courseChoice)) {
-                    System.out.println("Please enter a valid option: ");
-                    courseChoice = Tools.scan.next();
-                }
-                int courseChoiceV = Integer.valueOf(courseChoice);
-                while (Course.getMaxNumOfCourses() < courseChoiceV) {
-                    System.out.println("Incorrect number.");
-                    Menu.showAllCourses();
-                    System.out.print("Please enter an option from one of the above: ");
-                    courseChoice = Tools.scan.next();
-                    while (!Tools.intValidation(courseChoice)) {
-                        System.out.println("Please enter a valid option: ");
-                        courseChoice = Tools.scan.next();
-                    }
-                    courseChoiceV = Integer.valueOf(courseChoice);
-                }
-                String pk = courseChoice + "," + assignmentChoice;
-                if (pkList.contains(pk)) {
-                    System.out.println("This assignment is already in this class.");
-                } else {
-                    ca.insertIntoCoursesAssignments(courseChoice, assignmentChoice);
-                    pkList.add(pk);
-                }
-                System.out.print("Do you want to add this assignment to another course? (Y/N)");
-                addAnotherCourse = Tools.scan.next();
-            }
-            System.out.print("Do you want to repeat this for another assignment? (Y/N)");
-            addAnotherStudent = Tools.scan.next();
         }
+        String placeHolder = studentChoice + "," + assignmentChoice;
+        if (pkList.contains(placeHolder)) {
+            System.out.println("This student already has this assignment.");
+        } else {
+            System.out.println("Please grade the oral Mark (max 100): ");
+            String oMark = Tools.scan.next();
+            while (!Tools.intValidation(oMark)) {
+                System.out.println("Please enter a valid number: ");
+                oMark = Tools.scan.next();
+            }
+            float oMarkV = Integer.valueOf(oMark);
+            while (oMarkV > 100) {
+                System.out.println("The oral mark cannot exceed 100");
+                System.out.println("Please enter a mark between 0 and 100: ");
+                oMark = Tools.scan.next();
+                while (!Tools.intValidation(oMark)) {
+                    System.out.println("Please enter a valid number: ");
+                    assignmentChoice = Tools.scan.next();
+                    oMark = Tools.scan.next();
+                }
+                oMarkV = Integer.valueOf(oMark);
+            }
+            sa.insertIntoCoursesAssignments(studentChoice, assignmentChoice, oMark, "100");
+            pkList.add(placeHolder);
+        }
+
     }
 
     public static void main(String[] args) {

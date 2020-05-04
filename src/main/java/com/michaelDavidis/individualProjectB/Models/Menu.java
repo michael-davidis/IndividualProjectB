@@ -19,21 +19,27 @@ public class Menu {
 
     public Menu() {
     }
-
+    /**
+     * Prints all students.
+     */
     public static void showAllStudents() {
         Student student = new Student();
         student.selectAllStudents().forEach((s) -> {
             System.out.println(s.getId() + ". " + s.getLastName() + " " + s.getFirstName());
         });
     }
-
+    /**
+     * Prints all trainers.
+     */
     public static void showAllTrainers() {
         Trainer trainer = new Trainer();
         trainer.selectAllTrainers().forEach((t) -> {
             System.out.println(t.getId() + ". " + t.getLastName() + " " + t.getFirstName() + " with subject " + t.getSubject());
         });
     }
-
+    /**
+     * Prints all courses.
+     */
     public static void showAllCourses() {
         Course course = new Course();
 
@@ -41,14 +47,19 @@ public class Menu {
             System.out.println(c.getId() + ". " + c.getTitle() + ", Stream: " + c.getStream() + ", Type: " + c.getType() + ", Start Date: " + c.getStartDate() + ", End Date: " + c.getEndDate());
         });
     }
-
+    /**
+     * Prints all assignments.
+     */
     public static void showAllAssignments() {
         Assignment assignment = new Assignment();
         assignment.selectAllAssignments().forEach((a) -> {
-            System.out.println(a.getId() + ". " + a.getTitle() + ", Description: " + a.getDescription() + ", Submission Date: " + a.getSubDateTime() + ", Oral Mark: " + a.getoMark() + ", Total Mark: " + a.gettMark());
+            System.out.println(a.getId() + ". " + a.getTitle() + ", Description: " + a.getDescription());
         });
     }
-
+    
+    /**
+     * Prints all assignments per course.
+     */
     public void selectAssignmentsPerCourse() {
         Connection connection = null;
         Statement statement = null;
@@ -98,7 +109,10 @@ public class Menu {
             }
         }
     }
-
+    
+    /**
+     * Prints all trainers per course.
+     */
     public void selectTrainersPerCourse() {
         Connection connection = null;
         Statement statement = null;
@@ -148,7 +162,10 @@ public class Menu {
             }
         }
     }
-
+    
+    /**
+     * Prints all students with more than 1 courses.
+     */
     public void selectStudentsWithMoreThan1Courses() {
         Connection connection = null;
         Statement statement = null;
@@ -161,12 +178,12 @@ public class Menu {
 
             statement = connection.createStatement();
 
-            String query = "SELECT S.STUDENT_ID, S.LAST_NAME, S.FIRST_NAME FROM STUDENTS S, STUDENTS_COURSES SC GROUP BY S.STUDENT_ID HAVING COUNT(SC.COURSE_ID) > 1;";
+            String query = "SELECT S.STUDENT_ID, S.LAST_NAME, S.FIRST_NAME,COUNT(SC.STUDENT_ID) FROM STUDENTS S, STUDENTS_COURSES SC WHERE S.STUDENT_ID = SC.STUDENT_ID GROUP BY SC.STUDENT_ID HAVING COUNT(SC.STUDENT_ID) > 1;";
 
             resultSet = statement.executeQuery(query);
 
             while (resultSet.next()) {
-                int id = resultSet.getInt("STUDENT_ID");
+                String id = resultSet.getString("STUDENT_ID");
                 String lastName = resultSet.getString("LAST_NAME");
                 String firstName = resultSet.getString("FIRST_NAME");
                 System.out.println(id + ". " + lastName + " " + firstName);
@@ -198,7 +215,10 @@ public class Menu {
             }
         }
     }
-
+    
+    /**
+     * Prints all assignments per student per course
+     */
     public void selectAssignmentsPerCoursePerStudent() {
         Connection connection = null;
         Statement statement = null;
@@ -211,7 +231,7 @@ public class Menu {
 
             statement = connection.createStatement();
 
-            String query = "SELECT S.STUDENT_ID, S.LAST_NAME, S.FIRST_NAME, A.TITLE, C.TITLE AS COURSE FROM STUDENTS S, ASSIGNMENTS A, COURSES C, COURSES_ASSIGNMENTS CA, STUDENTS_COURSES SC WHERE A.ASSIGNMENT_ID = CA.ASSIGNMENT_ID AND S.STUDENT_ID = SC.STUDENT_ID AND C.COURSE_ID = CA.COURSE_ID AND C.COURSE_ID = SC.COURSE_ID ORDER BY S.STUDENT_ID;";
+            String query = "SELECT S.STUDENT_ID, S.LAST_NAME, S.FIRST_NAME, A.TITLE, SA.ORAL_MARK, SA.TOTAL_MARK FROM STUDENTS S, STUDENTS_ASSIGNMENTS SA, ASSIGNMENTS A WHERE S.STUDENT_ID = SA.STUDENT_ID AND A.ASSIGNMENT_ID = SA.ASSIGNMENT_ID;";
 
             resultSet = statement.executeQuery(query);
 
@@ -220,8 +240,9 @@ public class Menu {
                 String lastName = resultSet.getString("LAST_NAME");
                 String firstName = resultSet.getString("FIRST_NAME");
                 String title = resultSet.getString("TITLE");
-                String course = resultSet.getString("COURSE");
-                System.out.println(id + ". " + lastName + " " + firstName + " with assignment " + title + ", Course: " + course);
+                String oMark = resultSet.getString("ORAL_MARK");
+                String tMark = resultSet.getString("TOTAL_MARK");
+                System.out.println(id + ". " + lastName + " " + firstName + " with assignment " + title + ", Oral Mark: " + oMark + "/" + tMark + ".");
 
             }
         } catch (ClassNotFoundException | SQLException e) {
@@ -250,7 +271,11 @@ public class Menu {
             }
         }
     }
-
+    
+    /**
+     * The choices of the inner menu that prints results.
+     * @param innerChoice String that acts as a choice to get to the specific method.
+     */
     public void innerMenuShow(String innerChoice) {
         if (innerChoice.equalsIgnoreCase("1")) {
             System.out.println("\n \n");
@@ -299,7 +324,11 @@ public class Menu {
             System.out.println("\n \n");
         }
     }
-
+    
+    /**
+     * The choices of the inner menu that inserts values in the database.
+     * @param innerChoice String that acts as a choice to get to the specific method.
+     */
     public void innerMenuInsert(String innerChoice) {
         if (innerChoice.equalsIgnoreCase("1")) {
             Main.createStudent(student.selectAllIdsStudentCourse());
@@ -309,15 +338,18 @@ public class Menu {
             Main.createAssignment(CoursesAssignments.selectAllIdsCourseAssignment());
         } else if (innerChoice.equalsIgnoreCase("4")) {
             Main.createCourse();
-        } else if (innerChoice.equalsIgnoreCase("5")){
+        } else if (innerChoice.equalsIgnoreCase("5")) {
             Main.createConnectionStudentCourse();
-        } else if (innerChoice.equalsIgnoreCase("6")){
+        } else if (innerChoice.equalsIgnoreCase("6")) {
             Main.createConnectionTrainersCourses();
-        } else if (innerChoice.equalsIgnoreCase("7")){
-            Main.createConnectionAssignmentCourse();
+        } else if (innerChoice.equalsIgnoreCase("7")) {
+            Main.createConnectionCourseStudentAssignment();
         }
     }
-
+    
+    /**
+     * The programs intro.
+     */
     public static void intro() {
         System.out.println("*******************************************");
         System.out.println("*                                         *");
@@ -326,20 +358,29 @@ public class Menu {
         System.out.println("*                                         *");
         System.out.println("*******************************************\n");
     }
-
+    
+    /**
+     * The programs outro.
+     */
     public static void outro() {
         System.out.println("\n*******************************************");
         System.out.println("*             Thank you for               *");
         System.out.println("*             using our app!              *");
         System.out.println("*******************************************");
     }
-
+    
+    /**
+     * Choosing whether to create an object or show objects.
+     */
     public static void createOrSee() {
         System.out.println("\nDo you wish to make a new entry\nor to see what you have?");
         System.out.println("During this menu, you can type \"Exit\" and exit our app.");
         System.out.print("Press 1 to make a new entry or 2 to access the database: ");
     }
-
+    
+    /**
+     * Choose what to create from the list of options
+     */
     public static void chooseToCreateFromList() {
         System.out.println("\nYou can choose to create anything you want from this list.");
         showInputChoices();
@@ -353,7 +394,10 @@ public class Menu {
         System.out.print("Just type the number that you want: ");
 
     }
-
+    
+    /**
+     * Prints all the choices that you can input.
+     */
     public static void showInputChoices() {
 //      This is the menu for object creation
         System.out.println("\nPress 1 for a student.");
@@ -362,27 +406,32 @@ public class Menu {
         System.out.println("Press 4 for a course.");
         System.out.println("Press 5 to assign a student to a course.");
         System.out.println("Press 6 to assign a trainer to a course.");
-        System.out.println("Press 7 to assign an assignment to a course.");
+        System.out.println("Press 7 to assign a student to an assignment that is in his class.");
     }
-
+    
+    /**
+     * Prints all the choices that can be shown.
+     */
     public static void showSelectChoices() {
 //      This is the menu for printing objects
-        System.out.println("\nPress 1 for a course.");
+        System.out.println("\nPress 1 for a student.");
         System.out.println("Press 2 for a trainer.");
         System.out.println("Press 3 for an assignment.");
-        System.out.println("Press 4 for a student.");
+        System.out.println("Press 4 for a course.");
         System.out.println("Press 5 for a list of all the students per course.");
         System.out.println("Press 6 for a list of all the assignments per course.");
         System.out.println("Press 7 for a list of all trainers per course.");
         System.out.println("Press 8 for a list of all students with 2+ courses.");
         System.out.println("Press 9 for a list of all assignments per course per student");
-        System.out.println("one or more assignments in the same week as the date that you want.");
     }
-
+    
+    /**
+     * Main menu.
+     */
     public void mainMenu() {
         Tools tools = new Tools();
         String choice = "y";
-
+        intro();
         while (!choice.equalsIgnoreCase("exit")) {
             Menu.createOrSee();
             choice = tools.scan.next();
@@ -396,6 +445,7 @@ public class Menu {
                 innerMenuShow(innerChoice);
             }
         }
+        outro();
 
     }
 }
